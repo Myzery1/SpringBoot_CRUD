@@ -2,24 +2,29 @@ package web.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import web.model.User;
 import web.service.UserService;
 
+import java.util.List;
+
 @Controller
 public class UserController {
 
-    @Autowired
-    private UserService userDao;
+    private final UserService userService;
 
-    @GetMapping()
-    public String index(Model model) {
-        model.addAttribute("users", userDao.index());
-        return "index";
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
+    @GetMapping("/")
+    public String listUsers(Model model) {
+        List<User> users = userService.listUsers();
+        model.addAttribute("users", users);
+        return "/index";
+    }
 
     @GetMapping("/new")
     public String newUser(Model model) {
@@ -27,36 +32,33 @@ public class UserController {
         return "new";
     }
 
-    @Transactional
     @PostMapping()
-    public String create(@ModelAttribute("user") User user) {
-        userDao.save(user);
+    public String createUser(@ModelAttribute("user") User user) {
+        userService.saveUser(user);
         return "redirect:/";
     }
 
     @GetMapping("/{id}/edit")
-    public String edit(Model model, @PathVariable("id") int id) {
-        model.addAttribute("user", userDao.show(id));
+    public String editPage(Model model, @PathVariable("id") int id) {
+        model.addAttribute("user", userService.showId(id));
         return "/edit";
     }
 
-    @Transactional
     @PatchMapping("/{id}")
-    public String update(@ModelAttribute("user") User user) {
-        userDao.update(user);
+    public String updateUser(@ModelAttribute("user") User user) {
+        userService.updateUser(user);
         return "redirect:/";
     }
 
     @GetMapping("/{id}/delete")
-    public String delete(Model model, @PathVariable("id") int id) {
-        model.addAttribute("user", userDao.show(id));
+    public String deletePage(Model model, @PathVariable("id") int id) {
+        model.addAttribute("user", userService.showId(id));
         return "/delete";
     }
 
-    @Transactional
     @DeleteMapping("/{id}")
-    public String delete(@PathVariable("id") int id) {
-        userDao.delete(id);
+    public String deleteUser(@PathVariable("id") int id) {
+        userService.deleteUser(id);
         return "redirect:/";
     }
 }
